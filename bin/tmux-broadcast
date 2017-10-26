@@ -1,0 +1,279 @@
+#!/bin/bash
+#
+# The MIT License (MIT)
+# Copyright (c) 2014 Julien Limoges
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+BASENAME=$(basename $0)
+
+# Options and arguments are kept global for simplicity
+OPT_LOG=false
+OPT_LOG_PATH=''
+OPT_INTERACTIVE=false
+OPT_VERBOSE=false
+OPT_SILENT=false
+ARG_DST=''
+ARG_SRC=''
+PIPED=false
+
+# Keyboard activity
+KEY_PRESSED=''
+
+tmux_broadcast()
+{
+    local message="$@"
+
+    for id in $ARG_DST; do
+        tmux send-key -t "$id" "$@"
+    done
+}
+
+# Get all the pane ids in current window
+tmux_get_all()
+{
+    echo $(tmux list-panes -F '#{pane_id}')
+}
+
+# Get the current pane id
+tmux_get_src()
+{
+    echo $TMUX_PANE
+}
+
+translate_idx_to_id()
+{
+    local indices="$@"
+    # All panes are always sorted by indices
+    local all=$(tmux_get_all)
+    
+    local ids=""
+    for idx in $indices; do
+        # Translate [0,n] indices to [1,n+1]
+        local id=$(echo "$all" | cut -d ' ' -f $((idx+1)))
+        if [[ "$id" == "" ]]; then
+            err_msg "pane $idx could not be found"
+            exit 1
+        fi
+        ids="$ids $id"
+    done
+    echo $ids
+    return 0
+}
+
+read_rune()
+{
+    local byte1=''
+    local byte23=''
+    local byte4=''
+
+    # We read from 1 up to 4 characters. The reason for the characters 2-4 is
+    # for escaped sequence of characters.
+    # The first read is blocking. Upon input we test for an escaped sequence.
+
+    # Rapidly get the keys after blocking read
+    # $REPLY contains the data read by `read`
+    read -r -N1 2>/dev/null
+    if [[ "$?" -ne 0 ]]; then
+        return 1
+    fi
+    byte1="$REPLY"
+    # Check for an escaped sequence
+    if [[ "$byte1" == $'\x1b' ]]; then
+        read -r -N2 -t 0.001 2>/dev/null
+        byte23="$REPLY"
+        read -r -N1 -t 0.001 2>/dev/null
+        byte4="$REPLY"
+    fi
+
+    # We use a global because this seems to be the only way
+    # to make enter work.
+    KEY_PRESSED="$byte1$byte23$byte4"
+    # printf "keypress read \\\x%02x\n" "'${key1}" 1>&2
+    return 0
+}
+
+is_inside_tmux()
+{
+    if ! { [ "$TERM" = "screen" ] && [ -n "$TMUX" ]; } then
+        return 0
+    fi
+    return 1
+}
+
+is_interactive()
+{
+    echo true
+}
+
+usage()
+{
+    echo "usage:  $BASENAME [options] INDEX..."
+    echo "            INDEX corresponds to the tmux pane index obtained with tmux display-panes"
+    echo "            NOTE:$BASENAME must be executed inside a tmux session."
+}
+
+err_msg()
+{
+    echo "$BASENAME: $@" 1>&2
+}
+
+handle_params()
+{
+    local params="$@"
+
+    # We must be inside tmux
+    if [ ! is_inside_tmux ]; then
+        err_msg "not in tmux"
+        usage 1>&2
+        exit 1
+    fi
+
+    # Retrieve options and arguments
+    local args="$(getopt -o l:vs -l log: --name "$BASENAME" -- "$@")"
+
+    # We must have valid options and arguments
+    if [[ $? -ne 0 ]]; then
+        err_msg "could not process parameters"
+        usage 1>&2
+        exit 1
+    fi
+
+    eval set -- "$args"
+
+    # Extract options one by one until we only have arguments left
+    # We must use `shift` everytime a word is processed.
+    while true; do
+        case "$1" in
+            -l|--log)
+                shift
+                case "$1" in
+                   "")
+                        shift
+                    ;;
+                    *)
+                        OPT_LOG=true
+                        OPT_LOG_PATH="$1"
+                        shift
+                    ;;
+                esac
+            ;;
+            -s|--silent)
+                OPT_SILENT=true
+                shift
+            ;;
+            -v|--verbose)
+                OPT_VERBOSE=true
+                shift
+            ;;
+            --)
+                shift
+                # No more options to process
+                break
+            ;;
+            *)
+                err_msg "option parsing failed"
+                exit 1
+            ;;
+        esac
+    done
+
+    # We must have at least one broadcasting target
+    local nb_args=$(echo "$@" | wc -w)
+    if [ "$nb_args" -lt 1 ]; then
+        err_msg "missing pane operand"
+        usage 1>&2
+        exit 1
+    fi
+
+    # Parameters now only contains destinations
+    ARG_SRC=$(tmux_get_src)
+    ARG_DST=$(translate_idx_to_id "$@")
+
+    # Additional work for options
+    # If log is requested, create the file (or truncate it)
+    if [[ "$OPT_LOG" == true ]]; then
+        if [[ -d $OPT_LOG_PATH ]]; then
+            err_msg "log path is a directory"
+            exit 1
+        fi
+        echo -n "" > "$OPT_LOG_PATH"
+    fi
+}
+
+run()
+{
+    # Take control of what is output to the source pane
+    if [[ -t 0 ]]; then
+        stty -echo
+    fi
+
+    while read_rune; do
+        # Feedback to be given to the source pane
+        local feedback="$KEY_PRESSED"
+        # Message to be broadcasted
+        local message="$KEY_PRESSED"
+
+        # Control keys handling
+        case "$message" in
+            # Up
+            $'\x1b\x5b\x41') 
+                # Disable UP on input pane
+                feedback=''
+            ;;
+            # Down
+            $'\x1b\x5b\x42') 
+                # Disable DOWN on input pane
+                feedback=''
+            ;;
+            # Tab
+            $'\x09')
+                # Disable TAB on input pane
+                feedback=''
+            ;;
+            # Backspace
+            $'\x08')
+                # Backspace should work as intended on the input pane
+                feedback="$feedback\033[K"
+            ;;
+        esac
+
+        # Send feedback and broadcast
+        echo -en "$feedback"
+        tmux_broadcast "$message" 
+        
+        # It seems as if writing control characters through echo does not
+        # pass to the file. Unsure though.
+        if [[ "$OPT_LOG" == "true" ]]; then
+            echo -en "$feedback" >> "$OPT_LOG_PATH"
+        fi
+    done
+}
+
+main()
+{
+    # Process the options and get the resulting arguments
+    handle_params "$@"
+
+    run
+}
+
+# Emulate a program main to have better flow control throughout the program
+main $@
+

@@ -1,0 +1,23 @@
+
+# Changing the command prefix from C-b to C-a
+unbind C-b
+set-option -g prefix C-a
+
+# Use vim keys
+setw -g mode-keys vi
+unbind-key h
+unbind-key j
+unbind-key k
+unbind-key l
+
+bind-key h select-pane -L
+bind-key j select-pane -D
+bind-key k select-pane -U
+bind-key l select-pane -R
+
+# Allows smooth mouse scrolling
+set-option -g mouse on
+
+bind '"' split-window -c "#{pane_current_path}"
+bind % split-window -h -c "#{pane_current_path}"
+bind c new-window -c "#{pane_current_path}"
