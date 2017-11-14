@@ -1,8 +1,10 @@
 [include]
         path = ~/.gitconfig.local
 [user]
-	name = Julien Limoges
-	email = julienlimoges@gmail.com
+        name = Julien Limoges
+        email = julienlimoges@gmail.com
+[credential]
+        helper = osxkeychain
 [hub]
         protocol = https
 [color]

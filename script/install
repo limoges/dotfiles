@@ -7,15 +7,18 @@ set -e
 cd "$(dirname $0)"/..
 
 # Run Homebrew through the Brewfile
-echo "› brew bundle"
+echo "› installing brewfile "
 brew bundle
 
 # find the installers and run them iteratively
+echo "> installing install.sh scripts"
 find . -name install.sh | while read installer ; do sh -c "${installer}" ; done
 
-# Install Vundle for vim
-git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+# Install vim-plug
+echo "> installing vim plugins"
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 # Install the plugins for vim
-vim +PluginInstall +qall
+vim +PlugInstall +qall
 

@@ -1,45 +1,36 @@
-" No compatibility with vi, required by Vundle
-set nocompatible
 
-" Required by Vundle
-filetype off
-
-" Set the runtime path to include Vundle and initialize it; required by Vundle.
-set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#begin()
-
-" Let Vundle manages vundle, required by Vundle 
-Plugin 'VundleVim/Vundle.vim' 
-
-" Here is the list of plugins to be installed by Vundle.  
-Plugin 'tomasr/molokai' 
-Plugin 'tpope/vim-surround' 
-Plugin 'michaeljsmith/vim-indent-object'
-Plugin 'vim-airline/vim-airline'
-Plugin 'altercation/vim-colors-solarized'
-Plugin 'ngmy/vim-rubocop'
-Plugin 'ctrlpvim/ctrlp.vim'
-Plugin 'vim-ruby/vim-ruby'
-Plugin 'majutsushi/tagbar'
-Plugin 'Yggdroot/indentLine'
-Plugin 'Valloric/YouCompleteMe'
-Plugin 'bronson/vim-visual-star-search'
-Plugin 'airblade/vim-gitgutter'
-Plugin 'itchyny/lightline.vim'
-
-" All of your plugins must be added before this line, required by Vundle.
-call vundle#end()
-" Required by Vundle.
-filetype indent plugin on 
-
-" Brief help
-" :PluginList		- lists configured plugins
-" :PluginInstall 	- installs plugins; append `!` to update or just
-" :PluginSearch foo	- searches for foo; append `!` to refresh local cache
-" :PluginClean		- confirms removal of unused plugins;
-" 			  append `!` to auto-approve removal.
+" https://github.com/junegunn/vim-plug
+call plug#begin()
+Plug 'tomasr/molokai' 
+Plug 'tpope/vim-surround' 
+Plug 'michaeljsmith/vim-indent-object'
+Plug 'vim-airline/vim-airline'
+Plug 'altercation/vim-colors-solarized'
+Plug 'ngmy/vim-rubocop'
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'vim-ruby/vim-ruby'
+Plug 'jlanzarotta/bufexplorer'
+" Plugin 'majutsushi/tagbar'
+Plug 'Yggdroot/indentLine'
+Plug 'bronson/vim-visual-star-search'
+Plug 'airblade/vim-gitgutter'
+Plug 'itchyny/lightline.vim'
+Plug 'dracula/vim'
+Plug 'jacoborus/tender.vim'
+Plug 'fatih/vim-go'
+Plug 'moby/moby'
+Plug 'godlygeek/tabular'
+Plug 'NLKNguyen/papercolor-theme'
+Plug 'plasticboy/vim-markdown'
+Plug 'Raimondi/delimitMate'
+call plug#end()
 
 syntax on
+
+if (has("termguicolors"))
+ set termguicolors
+endif
+let g:lightline = { 'colorscheme': 'PaperColor' }
 
 " Allows use of the mouse when we are just browing a bit.
 set mouse=a
@@ -50,10 +41,13 @@ set number
 " Modifies the delete behaviour to match common applications.
 set backspace=indent,eol,start
 
-" Enable the vim-airline extension, required by vim-airline
-let g:airline#extensions#tabline#enabled = 1
+" Prevent space being used for space
+nnoremap <SPACE> <Nop>
+" Set the leader key
+let mapleader = " "
 
-colorscheme solarized
+let delimitMate_expand_cr = 1
+colorscheme papercolor
 set background=dark
 set expandtab
 set shiftwidth=2
@@ -63,13 +57,29 @@ set tabstop=4
 autocmd BufWritePre *.rb :%s/\s\+$//e
 
 " Open tagbar automatically if the file is supported
-autocmd VimEnter * nested :call tagbar#autoopen(1)
-nmap <F8> :TagbarToggle<CR>
+" autocmd VimEnter * nested :call tagbar#autoopen(1)
+" nmap <F8> :TagbarToggle<CR>
 
-command UpdateRockets %s/:\([^=,'"]*\) =>/\1:/gc
+" command UpdateRockets %s/:\([^=,'"]*\) =>/\1:/gc
 let &colorcolumn="80,".join(range(120,999),",")
 
 " Show indentation lines
 let g:indentLine_enabled = 1
 filetype indent on
 filetype plugin on
+
+" vim-go
+let g:go_fmt_command = "goimports"
+let g:go_highlight_extra_types = 0
+let g:go_highlight_array_whitespace_error = 0
+let g:go_highlight_chan_whitespace_error = 0
+let g:go_highlight_space_tab_error = 0
+let g:go_highlight_trailing_whitespace_error = 0
+let g:go_highlight_operators = 0
+let g:go_highlight_functions = 0
+let g:go_highlight_methods = 0
+let g:go_highlight_types = 0
+let g:go_highlight_fields = 0
+let g:go_highlight_format_strings = 1
+let g:go_highlight_variable_declarations = 0
+let g:go_highlight_variable_assignments = 0
