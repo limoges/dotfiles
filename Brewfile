@@ -23,6 +23,7 @@ brew 'webpquicklook'
 brew 'suspicious-package'
 brew 'quicklookase'
 brew 'qlvideo'
+brew 'httpie'
 
 # Cask applications
 cask 'alfred'
