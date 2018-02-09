@@ -24,6 +24,7 @@ brew 'suspicious-package'
 brew 'quicklookase'
 brew 'qlvideo'
 brew 'httpie'
+brew 'hugo'
 
 # Cask applications
 cask 'alfred'
