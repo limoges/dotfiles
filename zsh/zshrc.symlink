@@ -1,15 +1,9 @@
-# shortcut to this dotfiles path is $ZSH
-export ZSH=$HOME/.dotfiles
-
-# your project folder that we can `c [tab]` to
-export PROJECTS=~/Projects
-
-# Stash your environment variables in ~/.localrc. This means they'll stay out
+# Stash your environment variables in ~/.profile. This means they'll stay out
 # of your main dotfiles repository (which may be public, like this one), but
 # you'll have access to them in your scripts.
-if [[ -a ~/.localrc ]]
+if [[ -a ~/.localprofile ]]
 then
-  source ~/.localrc
+  source ~/.localprofile
 fi
 
 # all of our zsh files
@@ -41,8 +35,4 @@ done
 unset config_files
 
 [ -f /opt/dev/dev.sh ] && source /opt/dev/dev.sh
-
-
-
-
 
