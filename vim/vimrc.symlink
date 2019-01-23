@@ -1,85 +1,193 @@
 
+if has('nvim')
+  let g:python2_host_prog = '/usr/local/bin/python'
+  let g:python3_host_prog = '/usr/local/bin/python3'
+endif
+" Using Plug to manage plugins ()
 " https://github.com/junegunn/vim-plug
 call plug#begin()
-Plug 'tomasr/molokai' 
-Plug 'tpope/vim-surround' 
-Plug 'michaeljsmith/vim-indent-object'
-Plug 'vim-airline/vim-airline'
-Plug 'altercation/vim-colors-solarized'
-Plug 'ngmy/vim-rubocop'
-Plug 'ctrlpvim/ctrlp.vim'
-Plug 'vim-ruby/vim-ruby'
-Plug 'jlanzarotta/bufexplorer'
-" Plugin 'majutsushi/tagbar'
+" Split/join single-line/multiline declaration using gS/gJ
+Plug 'AndrewRadev/splitjoin.vim'
+
+" Hightlight opening and closing tags when in an xml element
+Plug 'Valloric/MatchTagAlways'
+
+" Automatic closing of brackets, quotes, ...
+" Plug 'Raimondi/delimitMate'
+Plug 'jiangmiao/auto-pairs'
+" Minimum vim 7.3, insert vertical characters to follow the indentation
 Plug 'Yggdroot/indentLine'
-Plug 'bronson/vim-visual-star-search'
+" Show git diff in the vertical line on the left
 Plug 'airblade/vim-gitgutter'
-Plug 'itchyny/lightline.vim'
-Plug 'dracula/vim'
-Plug 'jacoborus/tender.vim'
+" Allow searching the visually selected text
+Plug 'bronson/vim-visual-star-search'
+
+Plug 'rust-lang/rust.vim'
+
+Plug 'ctrlpvim/ctrlp.vim'
 Plug 'fatih/vim-go'
-Plug 'moby/moby'
 Plug 'godlygeek/tabular'
+Plug 'jacoborus/tender.vim'
+Plug 'jlanzarotta/bufexplorer'
+Plug 'michaeljsmith/vim-indent-object'
+Plug 'ngmy/vim-rubocop'
+" File structure viewer
+" Plug 'scrooloose/nerdtree'
+" Git inside vim
+Plug 'tpope/vim-fugitive'
+" Fast semantic autocompletion
+Plug 'Valloric/YouCompleteMe'
+
+" A few nice themes
+Plug 'raphamorim/lucario'
+Plug 'ayu-theme/ayu-vim'
+Plug 'roosta/srcery'
+Plug 'Marfisc/vorange'
 Plug 'NLKNguyen/papercolor-theme'
-Plug 'plasticboy/vim-markdown'
-Plug 'Raimondi/delimitMate'
+Plug 'tomasr/molokai' 
+Plug 'rakr/vim-one'
+Plug 'dracula/vim'
+Plug 'hzchirs/vim-material'
+Plug 'majutsushi/tagbar'
+
+" Manipulate quote/parenthesis with some commands
+" Plug 'tpope/vim-surround' 
+
+" UI Status Line at the bottom
+" Plug 'vim-airline/vim-airline'
+Plug 'itchyny/lightline.vim'
+
+"Plug 'vim-ruby/vim-ruby'
 call plug#end()
 
-syntax on
+let g:tagbar_type_go = {
+	\ 'ctagstype' : 'go',
+	\ 'kinds'     : [
+		\ 'p:package',
+		\ 'i:imports:1',
+		\ 'c:constants',
+		\ 'v:variables',
+		\ 't:types',
+		\ 'n:interfaces',
+		\ 'w:fields',
+		\ 'e:embedded',
+		\ 'm:methods',
+		\ 'r:constructor',
+		\ 'f:functions'
+	\ ],
+	\ 'sro' : '.',
+	\ 'kind2scope' : {
+		\ 't' : 'ctype',
+		\ 'n' : 'ntype'
+	\ },
+	\ 'scope2kind' : {
+		\ 'ctype' : 't',
+		\ 'ntype' : 'n'
+	\ },
+	\ 'ctagsbin'  : 'gotags',
+	\ 'ctagsargs' : '-sort -silent'
+\ }
+
+" Performance
+if has("mac")
+  "  set nocursorline
+
+  if exists("+relativenumber")
+    set norelativenumber
+  endif
+
+  set foldlevel=0
+  set foldmethod=manual
+endif
+set lazyredraw
 
 if (has("termguicolors"))
- set termguicolors
+  set termguicolors
 endif
-let g:lightline = { 'colorscheme': 'PaperColor' }
 
-" Allows use of the mouse when we are just browing a bit.
-set mouse=a
+" Calling :make should automatically write the buffer to file
+set autowrite
+let g:rustfmt_autosave = 1
 
+" Remove colorcolumn from quickfix window
+au FileType qf setlocal nonumber colorcolumn=
+" Close quickfix if it's the last buffer alive
+aug QFClose
+  au!
+  au WinEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&buftype") == "quickfix"|q|endif
+aug END
+
+set nolazyredraw
+set background=dark " for the dark version
+" set background=light " for the light version
+colorscheme ayu
+let ayucolor="mirage"
+
+filetype indent on
+filetype plugin on
+" Syntax highlighting
+syntax enable
 " Display line numbers
 set number
-
-" Modifies the delete behaviour to match common applications.
+" Modifies the delete behaviour to delete through changes
 set backspace=indent,eol,start
-
-" Prevent space being used for space
+" Use 'TrueColor', whatever that means
+" if (has("termguicolors"))
+"  set termguicolors
+" endif
+" Allows use of the mouse, nice for scrolling a bit
+set mouse=a
+" Prevent space being used for space, because I want it as leader
 nnoremap <SPACE> <Nop>
 " Set the leader key
 let mapleader = " "
+" Set the default colorscheme
+" colorscheme papercolor
 
-let delimitMate_expand_cr = 1
-colorscheme papercolor
-set background=dark
+" let g:lightline = { 'colorscheme': 'PaperColor' }
+nnoremap <Leader>gb :GoBuild<CR>
+nnoremap <Leader>gat :GoAddTags<CR>
+nnoremap <Leader>tt :TagbarToggle<CR>
+
+" let delimitMate_expand_cr = 1
 set expandtab
-set shiftwidth=2
-set softtabstop=2
-set tabstop=4
+" Indent with '>', use 8 spaces width
+set shiftwidth=8
+" set softtabstop=8
+" Show tabs as 8 spaces
+set tabstop=8
+"let g:one_allow_italics=1
+let g:airline_theme="one"
 
 autocmd BufWritePre *.rb :%s/\s\+$//e
 
-" Open tagbar automatically if the file is supported
-" autocmd VimEnter * nested :call tagbar#autoopen(1)
-" nmap <F8> :TagbarToggle<CR>
-
-" command UpdateRockets %s/:\([^=,'"]*\) =>/\1:/gc
+" Show a line at 80 chars and change background from 120
 let &colorcolumn="80,".join(range(120,999),",")
 
 " Show indentation lines
+" for 'Yggdroot/indentLine'
 let g:indentLine_enabled = 1
-filetype indent on
-filetype plugin on
+" let g:indentLine_char = "│"
+let g:indentLine_char = ''
+let g:indentLine_first_char = ''
+let g:indentLine_showFirstIndentLevel = 1
+let g:indentLine_setColors = 0
 
 " vim-go
 let g:go_fmt_command = "goimports"
-let g:go_highlight_extra_types = 0
-let g:go_highlight_array_whitespace_error = 0
-let g:go_highlight_chan_whitespace_error = 0
-let g:go_highlight_space_tab_error = 0
-let g:go_highlight_trailing_whitespace_error = 0
-let g:go_highlight_operators = 0
-let g:go_highlight_functions = 0
-let g:go_highlight_methods = 0
-let g:go_highlight_types = 0
-let g:go_highlight_fields = 0
+let g:go_highlight_extra_types = 1
+let g:go_highlight_array_whitespace_error = 1
+let g:go_highlight_chan_whitespace_error = 1
+let g:go_highlight_space_tab_error = 1
+let g:go_highlight_trailing_whitespace_error = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_function_arguments = 1
+let g:go_highlight_function_calls = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_string_spellcheck = 1
+let g:go_highlight_types = 1
+let g:go_highlight_fields = 1
 let g:go_highlight_format_strings = 1
-let g:go_highlight_variable_declarations = 0
-let g:go_highlight_variable_assignments = 0
+let g:go_highlight_variable_declarations = 1
+let g:go_highlight_variable_assignments = 1

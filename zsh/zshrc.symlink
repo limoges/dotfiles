@@ -1,9 +1,9 @@
 # Stash your environment variables in ~/.profile. This means they'll stay out
 # of your main dotfiles repository (which may be public, like this one), but
 # you'll have access to them in your scripts.
-if [[ -a ~/.localprofile ]]
+if [[ -a ~/.localrc ]]
 then
-  source ~/.localprofile
+  source ~/.localrc
 fi
 
 # all of our zsh files

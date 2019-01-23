@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Check that there is an argument
+PORT=$1
+
+BOUND=`lsof -i :$PORT | head -2 | tail -1 | awk '{print $1,$2,$3}'`
+
+echo :$PORT $BOUND
+read -p "Kill command (Y/n)? "
+if [[ $REPLY =~ ^[Y]$ ]]
+then
+        PID=`echo $BOUND | awk '{print $2}'`
+        echo "kill -9 $PID"
+        kill -9 $PID
+fi

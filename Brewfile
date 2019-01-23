@@ -26,6 +26,9 @@ brew 'qlvideo'
 brew 'httpie'
 brew 'hugo'
 
+# Server management
+brew 'terraform'
+
 # Cask applications
 cask 'alfred'
 cask 'bitbar'

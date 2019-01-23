@@ -1,11 +1,5 @@
-if [[ -n $SSH_CONNECTION ]]; then
-  export PS1='%m:%3~$(git_info_for_prompt)%# '
-else
-  export PS1='%3~$(git_info_for_prompt)%# '
-fi
-
-export LSCOLORS="exfxcxdxbxegedabagacad"
-export CLICOLOR=true
+# export LSCOLORS="exfxcxdxbxegedabagacad"
+# export CLICOLOR=true
 
 fpath=($ZSH/functions $fpath)
 
@@ -15,7 +9,7 @@ HISTFILE=~/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
 
-setopt NO_BG_NICE # don't nice background tasks
+# setopt NO_BG_NICE # don't nice background tasks
 setopt NO_HUP
 setopt NO_LIST_BEEP
 setopt LOCAL_OPTIONS # allow functions to have local options
@@ -39,6 +33,8 @@ setopt complete_aliases
 
 zle -N newtab
 
+bindkey -v
+bindkey '^R' history-incremental-search-backward
 bindkey '^[^[[D' backward-word
 bindkey '^[^[[C' forward-word
 bindkey '^[[5D' beginning-of-line
@@ -47,8 +43,4 @@ bindkey '^[[3~' delete-char
 bindkey '^[^N' newtab
 bindkey '^?' backward-delete-char
 
-# colored ls
-export TERM=xterm-256color
-
-eval `gdircolors $ZSH/zsh/dircolors.256dark`
-
+eval "$(gdircolors $ZSH/zsh/dircolors-256dark)"

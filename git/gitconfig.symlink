@@ -2,7 +2,7 @@
         path = ~/.gitconfig.local
 [user]
         name = Julien Limoges
-        email = julienlimoges@gmail.com
+        email = julien@limoges.io
 [credential]
         helper = osxkeychain
 [hub]
@@ -28,7 +28,9 @@
         default = simple
 [pull]
 	rebase = true
-[log]
-    date = relative
+# [log]
+#     date = relative
 [format]
     pretty = format:%C(yellow)%h %Cblue%>(12)%ad %Cgreen%<(7)%aN%Cred%d %Creset%s
+[http]
+	cookiefile = /Users/julienlimoges/.gitcookies

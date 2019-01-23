@@ -177,6 +177,7 @@ if ARGV.empty?
   ARGV << API_KEY
   ARGV << LOCATION
   ARGV << IMPERIAL
+  puts "BOOM"
 end
 plugin = WeatherPlugin.new(*ARGV)
 plugin.output

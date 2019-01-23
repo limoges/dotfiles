@@ -47,24 +47,27 @@ need_push () {
 }
 
 user_host () {
-  echo "%{$fg[yellow]%n@%m%}%{$reset_color%}"
+  echo "\x1b[1m\x1b[38;2;153;51;255m%n@%m\x1b[0m"
+#  printf "\x1b[38;2;127;0;255m%n@%m\x1b[0m\n"
+#  echo "%{$fg_bold[green]%n@%m%}%{$reset_color%}"
 }
 
 ret_status () {
-  echo "%(?:%{$fg_bold[green]%}➜:%{$fg_bold[red]%}✗)"
+  # echo "%(?:%{$fg_bold[green]%}➜:%{$fg_bold[red]%}✗)"
+  echo "%(?:%{$fg_bold[green]%}$?:%{$fg_bold[red]%}$?)%{$reset_color%}"
 }
 
 directory_name() {
-  echo "%{$fg_bold[blue]%}%3d%{$reset_color%}"
+  echo "%{$fg_bold[yellow]%}%3d%{$reset_color%}"
 }
 
-export PROMPT=$'\n$(ret_status) $(user_host) in $(directory_name) $(git_dirty)$(need_push)\n› '
-
 set_prompt () {
-  export RPROMPT="%{$fg_bold[yellow]%}%{$reset_color%}"
+  export RPROMPT="%{$fg_bold[purple]%}%{$reset_color%}"
 }
 
 precmd() {
   title "zsh" "%m" "%55<...<%~"
   set_prompt
 }
+
+export PROMPT=$'\n$(ret_status) $(user_host) in $(directory_name) $(git_dirty)$(need_push)\n› '

@@ -1,0 +1,5 @@
+ip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
+
+geo="$(curl -s freegeoip.net/csv/$ip)"
+
+echo $geo

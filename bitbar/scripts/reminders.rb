@@ -1,4 +1,6 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env LC_ALL=en_US.UTF-8 ruby
+# bitbar doesn't spawn shell with local variables, including no sane defaults
+# encoding: UTF-8
 CMD="/usr/local/bin/reminders"
 
 
@@ -60,7 +62,7 @@ if __FILE__ == $0
     h[list] = r
   end
 
-  puts "✓#{total}"
+  puts "🗒#{total}"
   puts "---"
   puts "New Reminder| color=white href=\"reminders://\""
   puts "---"
